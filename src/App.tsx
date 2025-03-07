@@ -1,66 +1,30 @@
+import { Route, Routes } from "react-router-dom"
+import 'bootstrap/dist/css/bootstrap.min.css';
 import "./App.css"
-import { Counter } from "./features/counter/Counter"
-import { Quotes } from "./features/quotes/Quotes"
-import logo from "./logo.svg"
+import MyData from "./components/cabinet/MyData";
+import { useAppDispatch } from "./app/hooks";
+import { useEffect } from "react";
+import { authUser } from "./features/user/userSlice";
+import Cabinet from "./components/cabinet/AppBar";
+import Register from "./components/authorisation/Register";
+import Login from "./components/authorisation/Login";
+
+export const apiUrl = 'http://localhost:8080';
 
 const App = () => {
+  const dispatch = useAppDispatch()
+
+  useEffect(() => {
+    dispatch(authUser())
+  }, [dispatch])
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Counter />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <Quotes />
-        <span>
-          <span>Learn </span>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux.js.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux-toolkit.js.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux Toolkit
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://react-redux.js.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React Redux
-          </a>
-          ,<span> and </span>
-          <a
-            className="App-link"
-            href="https://reselect.js.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Reselect
-          </a>
-        </span>
-      </header>
+    <div className="">
+      <Routes>
+        <Route path="/registration" element={<Register />} />
+        <Route path="/" element={<Login />} />
+        <Route path="/cabinet" element={<Cabinet />} />
+      </Routes>
     </div>
   )
 }

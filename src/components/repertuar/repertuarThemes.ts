@@ -1,0 +1,1 @@
+export const themesCompositions = ['Anbetung und Dank', 'Bitte und Gebet', 'Ruf zum Glauben und Umkehr', 'Heiligung und Hingabe', 'Dienst und Mission', 'Die ewige Heimat', 'Wiederkunft Jesu Christi', 'Trost und Ermunterung', 'Geburt Jesu Christi', 'Leiden und Sterben Jesu Christi', 'Christi Auferstehung', 'Hochzeitslieder', 'Pfingsten', 'Erntedankfest', 'Andere']
