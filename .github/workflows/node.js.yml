@@ -10,8 +10,8 @@ env:
   DOCKER_IMAGE: "regent_client"
   DEPLOY_DIR: "/root/regent_client/"
   CONTAINER_NAME: "regent_client"
-  HOST_PORT: "3002"
-  CONTAINER_PORT: "3002"
+  HOST_PORT: "3004"
+  CONTAINER_PORT: "3004"
 
 jobs:
   build:

@@ -3,5 +3,5 @@ services:
     image: regent_client:latest
     container_name: regent_client
     ports:
-      - "3003:3003"
+      - "3004:3004"
     command: "nginx -g 'daemon off;'"
