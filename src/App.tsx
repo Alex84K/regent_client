@@ -11,7 +11,8 @@ import Login from "./components/authorisation/Login";
 import { getAllCompositions } from "./features/composition/compositionSlice";
 import { getAllEvents } from "./features/events_feature/eventPlanSlice";
 
-export const apiUrl = 'http://localhost:8080';
+//export const apiUrl = 'http://localhost:8080';
+export const apiUrl = 'https://regentserver.shk.solutions'
 
 const App = () => {
   const dispatch = useAppDispatch()
