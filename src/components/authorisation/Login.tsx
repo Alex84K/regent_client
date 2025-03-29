@@ -84,10 +84,10 @@ const Login = () => {
   
   
     return (
-      <div className={`${styles.bg_whitebl} `}>
+      <div className={`${styles.bg_whitebl} mt-5`}>
         <div className={`${styles.container} d-flex justify-content-center`}>
           <div
-            className={`${styles.loginPanel} ${styles.logincontainer} ${styles.form_box} col-sm-12 col-lg-8 bg_light`}
+            className={`${styles.loginPanel} ${styles.logincontainer} ${styles.form_box} col-sm-12 col-lg-4 bg_light border border-primary rounded p-4 `}
           >
             <h2>Welcome Back!</h2>
             <p>Please enter your username and password below</p>
@@ -159,6 +159,10 @@ const Login = () => {
             </div>
             <Link to="/login-reload" className={styles.forgot} id="forgot">
               Forgot your password?
+            </Link>
+            <br />
+            <Link to="/registration" className={styles.forgot} id="forgot">
+              Registration
             </Link>
           </div>
         </div>

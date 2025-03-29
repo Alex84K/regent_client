@@ -24,6 +24,7 @@ import { useState } from 'react';
 import MyData from './MyData';
 import CalendarApp from '../calendar/CalendarApp';
 import RepertuarList from '../repertuar/RepertuarList';
+import Account from './Account';
 
 const drawerWidth = 240;
 
@@ -225,7 +226,7 @@ export default function MiniDrawer() {
           <CalendarApp />
         </div>
         <div className={openAccount}>
-          <MyData/>
+          <Account/>
         </div>
         <div className={openList}>
           <RepertuarList/>

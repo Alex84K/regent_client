@@ -1,123 +1,33 @@
-import React from 'react'
+import React, { useEffect, useState } from "react"
 import {
   EventApi,
   DateSelectArg,
   EventClickArg,
   EventContentArg,
   formatDate,
-} from '@fullcalendar/core'
-import FullCalendar from '@fullcalendar/react'
-import dayGridPlugin from '@fullcalendar/daygrid'
-import timeGridPlugin from '@fullcalendar/timegrid'
-import interactionPlugin from '@fullcalendar/interaction'
-import { INITIAL_EVENTS, createEventId } from './event-utils'
-import styles from './Calendar.module.css'
+} from "@fullcalendar/core"
+import FullCalendar from "@fullcalendar/react"
+import dayGridPlugin from "@fullcalendar/daygrid"
+import interactionPlugin from "@fullcalendar/interaction"
+import { INITIAL_EVENTS, createEventId } from "./event-utils"
+import styles from "./Calendar.module.css"
+import ModalAddCompositionInCalendar from "./ModalAddCompositionInCalendar"
+import { useAppDispatch, useAppSelector } from "../../app/hooks"
+import {
+  getAllEvents,
+  getAllEventsBuMonth,
+  getEventById,
+  removeEventById,
+  selectEventsList,
+} from "../../features/events_feature/eventPlanSlice"
+import { EventsByMonthsDto } from "../../features/events_feature/type"
+import ModalEventPlanInfo from "./ModalEventPlanInfo"
+import { EventPlan, RenderSidebar } from "./RenderSidebar"
 
-interface DemoAppState {
-  weekendsVisible: boolean
-  currentEvents: EventApi[]
-}
+// ✅ Функция renderSidebar теперь выше CalendarApp
 
-export default class CalendarApp extends React.Component<{}, DemoAppState> {
 
-  state: DemoAppState = {
-    weekendsVisible: true,
-    currentEvents: []
-  }
-
-  render() {
-    return (
-      <div className='demo-app'>
-        {this.renderSidebar()}
-        <div className='demo-app-main'>
-          <FullCalendar
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-            headerToolbar={{
-              left: 'prev,next today',
-              center: 'title',
-              right: 'dayGridMonth,timeGridWeek,timeGridDay'
-            }}
-            initialView='dayGridMonth'
-            editable={true}
-            selectable={true}
-            selectMirror={true}
-            dayMaxEvents={true}
-            weekends={this.state.weekendsVisible}
-            initialEvents={INITIAL_EVENTS} // alternatively, use the `events` setting to fetch from a feed
-            select={this.handleDateSelect}
-            eventContent={renderEventContent} // custom render function
-            eventClick={this.handleEventClick}
-            eventsSet={this.handleEvents} // called after events are initialized/added/changed/removed
-            /* you can update a remote database when these fire:
-            eventAdd={function(){}}
-            eventChange={function(){}}
-            eventRemove={function(){}}
-            */
-          />
-        </div>
-      </div>
-    )
-  }
-
-  renderSidebar() {
-    return (
-      <div className='demo-app-sidebar'>
-        <div className='demo-app-sidebar-section'>
-          <h2>Instructions</h2>
-          <ul className={styles.ul}>
-            <li className={styles.li}>Select dates and you will be prompted to create a new event</li>
-            <li className={styles.li}>Drag, drop, and resize events</li>
-            <li className={styles.li}>Click an event to delete it</li>
-          </ul>
-        </div>
-       
-        <div className='demo-app-sidebar-section'>
-          <h2>All Events ({this.state.currentEvents.length})</h2>
-          <ul className={styles.ul}>
-            {this.state.currentEvents.map(renderSidebarEvent)}
-          </ul>
-        </div>
-      </div>
-    )
-  }
-
-  handleWeekendsToggle = () => {
-    this.setState({
-      weekendsVisible: !this.state.weekendsVisible
-    })
-  }
-
-  handleDateSelect = (selectInfo: DateSelectArg) => {
-    let title = prompt('Please enter a new title for your event')
-    let calendarApi = selectInfo.view.calendar
-
-    calendarApi.unselect() // clear date selection
-
-    if (title) {
-      calendarApi.addEvent({
-        id: createEventId(),
-        title,
-        start: selectInfo.startStr,
-        end: selectInfo.endStr,
-        allDay: selectInfo.allDay
-      })
-    }
-  }
-
-  handleEventClick = (clickInfo: EventClickArg) => {
-    if (confirm(`Are you sure you want to delete the event '${clickInfo.event.title}'`)) {
-      clickInfo.event.remove()
-    }
-  }
-
-  handleEvents = (events: EventApi[]) => {
-    this.setState({
-      currentEvents: events
-    })
-  }
-
-}
-
+// ✅ Функция renderEventContent теперь тоже выше CalendarApp
 function renderEventContent(eventContent: EventContentArg) {
   return (
     <>
@@ -127,11 +37,97 @@ function renderEventContent(eventContent: EventContentArg) {
   )
 }
 
-function renderSidebarEvent(event: EventApi) {
+
+const CalendarApp: React.FC = () => {
+  const [weekendsVisible, setWeekendsVisible] = useState(true)
+  const [currentEvents, setCurrentEvents] = useState<EventApi[]>([])
+  const [currentEventsPlan, setCurrentEventsPlan] = useState<EventPlan[]>([])
+  const [openModal, setOpenModal] = useState(false)
+  const [openModalEventInfo, setOpenModalEventInfo] = useState(false)
+  const [selectedStart, setSelectedStart] = useState("")
+  const [selectedEnd, setSelectedEnd] = useState("")
+  const [calendarApi, setCalendarApi] = useState<any>(null)
+  const dispatch = useAppDispatch()
+  const initial_events = useAppSelector(selectEventsList)
+
+  useEffect(() => {
+    dispatch(getAllEvents())
+  }, [])
+
+  const handleDateSelect = (selectInfo: DateSelectArg) => {
+    setSelectedStart(selectInfo.startStr)
+    setSelectedEnd(selectInfo.endStr)
+    setCalendarApi(selectInfo.view.calendar)
+    setOpenModal(true)
+  }
+
+  const handleEventClick = (clickInfo: EventClickArg) => {
+    dispatch(getEventById(clickInfo.event._def.publicId))
+    setOpenModalEventInfo(true)
+    console.log(clickInfo)
+    const eventDate = clickInfo.event.start // Получаем объект Date
+    const formattedDate = eventDate
+      ? formatDate(eventDate, {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })
+      : "Дата неизвестна"
+
+    console.log("Выбранное событие:", clickInfo.event.title)
+    console.log("Дата события:", formattedDate)
+    /*dispatch(removeEventById(clickInfo.event._def.publicId))
+    if (confirm(`Удалить событие "${clickInfo.event.title}"?`)) {
+      clickInfo.event.remove()
+    }*/
+  }
+
+  const handleEvents = (events: EventApi[]) => {
+    setCurrentEvents(events)
+  }
+
   return (
-    <li key={event.id} className={styles.li}>
-      <b className={styles.b}>{formatDate(event.start!, {year: 'numeric', month: 'short', day: 'numeric'})}</b>
-      <i>{event.title}</i>
-    </li>
+    <div className="demo-app">
+      {RenderSidebar(weekendsVisible, setWeekendsVisible, currentEventsPlan)}
+
+      <div className="demo-app-main">
+        <FullCalendar
+          plugins={[dayGridPlugin, interactionPlugin]}
+          headerToolbar={{
+            left: "prev,next today",
+            center: "title",
+            right: "dayGridMonth,timeGridWeek,timeGridDay",
+          }}
+          initialView="dayGridMonth"
+          editable={true}
+          selectable={true}
+          selectMirror={true}
+          dayMaxEvents={true}
+          weekends={weekendsVisible}
+          //initialEvents={INITIAL_EVENTS}
+          //initialEvents={initial_events}
+          events={initial_events}
+          select={handleDateSelect}
+          eventContent={renderEventContent} // ✅ Ошибка пропадёт
+          eventClick={handleEventClick}
+          eventsSet={handleEvents}
+        />
+      </div>
+
+      <ModalAddCompositionInCalendar
+        open={openModal}
+        setOpen={setOpenModal}
+        selectedStart={selectedStart}
+        selectedEnd={selectedEnd}
+        calendarApi={calendarApi}
+      />
+
+      <ModalEventPlanInfo
+        open={openModalEventInfo}
+        setOpen={setOpenModalEventInfo}
+      />
+    </div>
   )
 }
+
+export default CalendarApp

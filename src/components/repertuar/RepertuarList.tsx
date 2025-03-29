@@ -1,8 +1,8 @@
 import { Button, MenuItem, TextField } from "@mui/material"
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { themesCompositions } from "./repertuarThemes"
 import ModalAddComposition from "./ModalAddComposition"
-import { fetchCompositionByTheme } from "../../features/composition/compositionApi"
+import { fetchCompositionByTheme, fetchDeleteFromWorkComposition } from "../../features/composition/compositionApi"
 import { styled } from "@mui/material/styles"
 import Table from "@mui/material/Table"
 import TableBody from "@mui/material/TableBody"
@@ -12,7 +12,13 @@ import TableHead from "@mui/material/TableHead"
 import TableRow from "@mui/material/TableRow"
 import Paper from "@mui/material/Paper"
 import { Composition } from "../../features/composition/types"
+import ModalAddInWork from "./ModalAddInWork"
+import IconButton from "@mui/material/IconButton"
+import DeleteIcon from "@mui/icons-material/Delete"
+import { useAppDispatch, useAppSelector } from "../../app/hooks"
+import { getCompositionById, getCompositionsByTheme, selectCompositionsList } from "../../features/composition/compositionSlice"
 
+// Стилизация таблицы
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: theme.palette.common.black,
@@ -27,58 +33,59 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   "&:nth-of-type(odd)": {
     backgroundColor: theme.palette.action.hover,
   },
-  // hide last border
   "&:last-child td, &:last-child th": {
     border: 0,
   },
 }))
 
-function createData(
-  name: string,
-  calories: number,
-  fat: number,
-  carbs: number,
-  protein: number,
-) {
-  return { name, calories, fat, carbs, protein }
-}
-
-const rows = [
-  createData("Frozen yoghurt", 159, 6.0, 24, 4.0),
-  createData("Ice cream sandwich", 237, 9.0, 37, 4.3),
-  createData("Eclair", 262, 16.0, 24, 6.0),
-  createData("Cupcake", 305, 3.7, 67, 4.3),
-  createData("Gingerbread", 356, 16.0, 49, 3.9),
-]
-
 const RepertuarList = () => {
-  const [compositions, setCompositions] = useState<Composition[]>(
-    [] as Composition[],
-  )
+  const [themeCompositions, setThemeCompositions] = useState("Anbetung und Dank")  // Инициализация выбранной темы как "Alle"
+  const compositions = useAppSelector(selectCompositionsList)
+  const [openModal, setOpenModal] = useState(false)
+  const dispatch = useAppDispatch();
+
+  // Получение композиций по выбранной теме
   const getCompositions = (theme: string) => {
-    fetchCompositionByTheme(theme).then(data => {
-      setCompositions(data)
-    })
+    setThemeCompositions(theme)
+    dispatch(getCompositionsByTheme(theme))
+  }
+
+  // Удаление из работы
+  const deleteFromWork = (id: string) => {
+    fetchDeleteFromWorkComposition(id).then(() =>
+      dispatch(getCompositionsByTheme(themeCompositions))
+    )
+  }
+
+  // Сразу загружаем данные для первой темы при монтировании компонента
+  useEffect(() => {
+    getCompositions("Anbetung und Dank")
+  }, [])
+
+  const openModalAdd = (id: string) => {
+    dispatch(getCompositionById(id))
+    setOpenModal(true)
   }
 
   return (
-    <div className="row ">
+    <div className="row mb-5 pb-5">
       <div className="col-lg-4">
-      <ModalAddComposition />
+        <ModalAddComposition />
         <div className="">
           <TextField
             id="outlined-select-currency"
             select
             label="Repertuar"
-            defaultValue="Alle"
+            value={themeCompositions}  // Используем значение состояния
             helperText="Please select your currency"
             className="w-100"
             onChange={e => {
-              getCompositions(e.target.value)
+              getCompositions(e.target.value)  // Обработчик выбора темы
             }}
           >
             {themesCompositions.map((t, i) => (
-              <MenuItem key={i + t} value={t}>
+              // Используем уникальный key для каждого MenuItem
+              <MenuItem key={`${t}-${i}`} value={t}>
                 {t}
               </MenuItem>
             ))}
@@ -95,19 +102,38 @@ const RepertuarList = () => {
                 <StyledTableCell align="right">Book</StyledTableCell>
                 <StyledTableCell align="right">Nr.</StyledTableCell>
                 <StyledTableCell align="right">Data</StyledTableCell>
+                <StyledTableCell align="right">in Work</StyledTableCell>
+                <StyledTableCell align="right">Add in Work</StyledTableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {compositions.map((row, i) => (
-                <StyledTableRow key={row.name}>
+                <StyledTableRow key={row.id}>
                   <StyledTableCell component="th" scope="row">
                     {i + 1}
                   </StyledTableCell>
                   <StyledTableCell align="right">{row.name}</StyledTableCell>
                   <StyledTableCell align="right">{row.book}</StyledTableCell>
                   <StyledTableCell align="right">{row.number}</StyledTableCell>
+                  <StyledTableCell align="right">{row.lastData}</StyledTableCell>
                   <StyledTableCell align="right">
-                    {row.lastData}
+                    {row.inWork ? (
+                      <>
+                        {row.lastDirigent} /{" "}
+                        <IconButton
+                          aria-label="delete"
+                          size="small"
+                          onClick={() => deleteFromWork(row.id)}
+                        >
+                          <DeleteIcon fontSize="inherit" sx={{ color: "red" }} />
+                        </IconButton>
+                      </>
+                    ) : (
+                      <></>
+                    )}
+                  </StyledTableCell>
+                  <StyledTableCell align="right">
+                    <Button onClick={() => openModalAdd(row.id)}>open</Button>
                   </StyledTableCell>
                 </StyledTableRow>
               ))}
@@ -115,7 +141,11 @@ const RepertuarList = () => {
           </Table>
         </TableContainer>
       </div>
-      
+
+      <ModalAddInWork
+        open={openModal}
+        setOpen={setOpenModal}
+      />
     </div>
   )
 }

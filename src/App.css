@@ -2,6 +2,23 @@
   text-align: center;
 }
 
+.fc-daygrid-day-events {
+  overflow: hidden;
+}
+
+.fc-daygrid-event-harness {
+  border: 1px solid rgb(0, 102, 255);
+  border-radius:  5px;
+}
+
+.fc-daygrid-event-harness b {
+  display: none;
+}
+
+.fc-daygrid-day-top a {
+  text-decoration: none;
+}
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -37,6 +54,19 @@
 
 .fc-col-header-cell-cushion {
   text-decoration: none;
+}
+
+.demo-app-sidebar {
+  max-height: 800px; /* Ограничиваем высоту */
+  overflow-y: auto; /* Добавляем вертикальную прокрутку */
+  padding: 10px;
+  border: 1px solid #ccc; /* Для визуального разделения */
+  border-radius: 8px;
+  background: #f9f9f9; /* Лёгкий фон */
+}
+
+.cursor_pointer {
+  cursor: pointer;
 }
 
 @media (max-width: 768px) {

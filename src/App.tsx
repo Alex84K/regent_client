@@ -8,6 +8,8 @@ import { authUser } from "./features/user/userSlice";
 import Cabinet from "./components/cabinet/AppBar";
 import Register from "./components/authorisation/Register";
 import Login from "./components/authorisation/Login";
+import { getAllCompositions } from "./features/composition/compositionSlice";
+import { getAllEvents } from "./features/events_feature/eventPlanSlice";
 
 export const apiUrl = 'http://localhost:8080';
 
@@ -15,7 +17,9 @@ const App = () => {
   const dispatch = useAppDispatch()
 
   useEffect(() => {
-    dispatch(authUser())
+    dispatch(authUser()).then(() => {
+      dispatch(getAllCompositions())
+    })
   }, [dispatch])
 
   return (

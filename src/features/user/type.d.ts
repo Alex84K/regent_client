@@ -56,6 +56,7 @@ export interface UserEdit {
     firstName: string;
     lastName: string;
     email: string;
+    telefon?: string
 }
 
 export interface ChangePwd {

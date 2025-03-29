@@ -132,6 +132,7 @@ export const updateUserAccount = async (user: UserEdit): Promise<User> => {
                 firstName: user.firstName,
                 lastName: user.lastName,
                 email: user.email,
+                telefon: user.telefon,
             },
             { headers: { "Content-Type": "application/json" } },
         )
